@@ -1,0 +1,10 @@
+{
+    "ms":{
+        "server":{
+            "nats":{
+                "domain":"auth1",
+                "url":"nats://nats:4222"
+            }
+        }
+    }
+}

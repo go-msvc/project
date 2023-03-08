@@ -1,0 +1,68 @@
+version: "3.8"
+services:
+    ##########################################################################
+    # BASE CONTAINERS
+    ##########################################################################
+    nats:
+        image: nats
+        hostname: nats
+        restart: unless-stopped
+        environment:
+            - TZ=${TIMEZONE}
+        volumes:
+            - ./conf/nats:/etc/nats
+        ports:
+            - "4222:4222"
+            - "6222:6222"
+            - "8222:8222"
+        networks:
+            - project1
+
+    redis:
+        image: redis
+        hostname: redis
+        restart: unless-stopped
+        environment:
+            - TZ=${TIMEZONE}
+        ports:
+            - "6379:6379"
+        networks:
+            - project1
+
+    ##########################################################################
+    # auth
+    ##########################################################################
+    auth-mariadb:
+        image: mariadb:10.7
+        restart: unless-stopped
+        environment:
+            - TZ=${TIMEZONE}
+            - MYSQL_ROOT_PASSWORD=asdf@123456
+            - MYSQL_PASSWORD=auth
+            - MYSQL_USER=auth
+            - MYSQL_DATABASE=auth
+        volumes:
+            - ./data/auth/maria-db:/var/lib/mysql
+            - ./conf/auth/mariadb/init.d:/docker-entrypoint-initdb.d
+        ports:
+            - "3306:3306"
+        networks:
+            - project1
+
+    auth-service:
+        image: go-msvc/auth:v0.0.0
+        restart: unless-stopped
+        environment:
+            - TZ=${TIMEZONE}
+            - DB_HOST=auth-mariadb
+            - DB_PORT=3306
+        volumes:
+            - ./conf/auth/service:/root/conf
+        networks:
+            - project1
+
+############
+# NETWORKS #
+############
+networks:
+    project1:
